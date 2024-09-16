@@ -31,6 +31,7 @@ Options:
 	exit(ERROR_INVALID_PARAMETER);
 }
 
+
 runluau::settings read_args(std::vector<std::string>& args, size_t starting_point) {
 	std::vector<std::string> script_args;
 	std::vector<std::string> plugins;
