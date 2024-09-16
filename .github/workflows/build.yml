@@ -18,9 +18,6 @@ jobs:
   build:
     runs-on: windows-latest
 
-    env:
-      LUAUSRC: ${{ github.workspace }}\luau
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -28,18 +25,25 @@ jobs:
       - name: Clone Luau
         run: |
           git clone https://github.com/luau-lang/luau.git
-          echo "LUAUSRC=${{ github.workspace }}\luau" >> $Env:GITHUB_ENV
+          echo "LUAUSRC=${{ github.workspace }}\\luau" >> $Env:GITHUB_ENV
 
       - name: Clone runluau-plugins
         run: |
           git clone https://github.com/plusgiant5/runluau-plugins.git
 
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v1
+
+      - name: Build Luau using CMake
+        run: |
+          mkdir $Env:LUAUSRC/cmake
+          cd $Env:LUAUSRC/cmake
+          cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build . --target Luau.Repl.CLI --config RelWithDebInfo
+          cmake --build . --target Luau.Analyze.CLI --config RelWithDebInfo
+
       - name: Install Visual Studio Build Tools
         uses: microsoft/setup-msbuild@v1
-
-      - name: Build Luau
-        run: |
-          MSBuild.exe $Env:LUAUSRC/Luau.sln /p:Configuration=Release /p:Platform=x64
 
       - name: Build runluau
         run: |
