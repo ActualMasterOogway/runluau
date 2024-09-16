@@ -1,0 +1,58 @@
+name: Build runluau
+
+on:
+  push:
+    paths:
+    - '**.cpp'
+    - '**.hpp'
+    - '**.c'
+    - '**.h'
+  pull_request:
+    paths:
+    - '**.cpp'
+    - '**.hpp'
+    - '**.c'
+    - '**.h'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      LUAUSRC: ${{ github.workspace }}\luau
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Clone Luau
+        run: |
+          git clone https://github.com/luau-lang/luau.git
+          echo "LUAUSRC=${{ github.workspace }}\luau" >> $Env:GITHUB_ENV
+
+      - name: Clone runluau-plugins
+        run: |
+          git clone https://github.com/plusgiant5/runluau-plugins.git
+
+      - name: Install Visual Studio Build Tools
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Build Luau
+        run: |
+          MSBuild.exe $Env:LUAUSRC/Luau.sln /p:Configuration=Release /p:Platform=x64
+
+      - name: Build runluau
+        run: |
+          MSBuild.exe runluau.sln /p:Configuration=Release /p:Platform=x64
+
+      - name: Build runluau-plugins
+        run: |
+          MSBuild.exe runluau-plugins.sln /p:Configuration=Release /p:Platform=x64
+
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Build Output
+          path: |
+            ${{ github.workspace }}/runluau/out/
+            ${{ github.workspace }}/runluau-plugins/out/
